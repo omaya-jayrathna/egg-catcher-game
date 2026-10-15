@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Egg Catcher with Banana Bonus</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!------LOGIN SCREEN------->
+    <div id="loginScreen" class="screen active">
+      <div class="cloud cloud-left"></div>
+      <div class="cloud cloud-right"></div>
+
+      <h1 class="game-title">🥚 Egg Catcher 🧺</h1>
+
+      <div class="card">
+        <h2>🔐 Login</h2>
+        <p class="subtitle">Welcome back!</p>
+        <input type="text" id="loginUsername" placeholder="Username" />
+        <input type="password" id="loginPassword" placeholder="Password" />
+
+        <button id="btnLogin" class="btn-primary">Login</button>
+
+        <p class="link-text">
+          Don't have an account ?
+          <span id="linkToRegister" class="link">Register</span>
+        </p>
+      </div>
+    </div>
+
+    <!-------REGISTER SCREEN------->
+    <div id="registerScreen" class="screen">
+      <div class="cloud cloud-left"></div>
+      <div class="cloud cloud-right"></div>
+
+      <h1 class="game-title">🥚 Egg Catcher 🧺</h1>
+      <div class="card">
+        <h2>📝 Register</h2>
+        <p class="subtitle">Create your account</p>
+
+        <input type="text" id="regName" placeholder="Enter Your Name" />
+        <input type="text" id="regUsername" placeholder="Username" />
+        <input type="password" id="regPassword" placeholder="Password" />
+        <input type="password" id="regConfirm" placeholder="Confirm Password" />
+
+        <button id="btnRegister" class="btn-success">Register</button>
+
+        <p class="link-text">
+          Already have an account ?
+          <span id="linkToLogin" class="link">Login</span>
+        </p>
+      </div>
+    </div>
+
+    <!-------DASHBOARD SCREEN------->
+    <div id="dashboardScreen" class="screen">
+      <div class="cloud cloud-left"></div>
+      <div class="cloud cloud-right"></div>
+
+      <h1 class="game-title">🥚 Egg Catcher 🧺</h1>
+      <p class="welcome-text">Welcome, <span id="welcomeName">Player</span>!</p>
+      <div class="high-score-card">
+        <span>🏆 High Score: <span id="dashHighScore">0</span></span>
+      </div>
+
+      <p class="difficulty-label">Choose Difficulty:</p>
+      <div class="difficulty-row">
+        <button id="btnEasy" class="diff-btn diff-easy">Easy</button>
+        <button id="btnMedium" class="diff-btn diff-medium active">
+          Medium
+        </button>
+        <button id="btnHard" class="diff-btn diff-hard">Hard</button>
+      </div>
+
+      <button id="btnStartGame" class="btn-primary btn-large">
+        ▶ Start Game
+      </button>
+      <button id="btnViewLeaderboard" class="btn-outline">
+        🏆 View Leaderboard
+      </button>
+
+      <p class="link-text">
+        <span id="linkLogout" class="link">Logout</span>
+      </p>
+    </div>
+
+    <!--------GAME SCREEN------>
+    <div id="gameScreen" class="screen">
+      <div id="gameHud">
+        <div class="hud-item">⭐ Score: <span id="score">0</span></div>
+        <div class="hud-item">❤️ Lives: <span id="lives">3</span></div>
+        <div class="hud-item">🏆 High: <span id="highScore">0</span></div>
+      </div>
+      <div class="hud-player">Player: <span id="playerName">Player</span></div>
+
+      <canvas id="gameCanvas"></canvas>
+
+      <div id="bonusTrigger" class="bonus-trigger"></div>
+    </div>
+
+    <!--------BONUS ROUND OVERLAY------>
+    <div id="bonusScreen" class="overlay hidden">
+      <div class="bonus-card">
+        <h2>🍌 BANANA BONUS! 🍌</h2>
+        <p class="subtitle">Solve the puzzle to earn bonus points!</p>
+
+        <div id="puzzleContainer">
+          <img id="puzzleImage" src="" alt="Puzzle" />
+        </div>
+
+        <div id="answerButtons"></div>
+      </div>
+    </div>
+
+    <!------LEADERBOARD SCREEN------>
+    <div id="leaderboardScreen" class="screen">
+      <h1 class="game-title">🏆 Top Scores</h1>
+
+      <div class="card leaderboard-card">
+        <div class="leaderboard-headers">
+          <span>Rank</span>
+          <span>Name</span>
+          <span>Score</span>
+        </div>
+        <div id="leaderboardRows"></div>
+      </div>
+
+      <button id="btnBackToMenu" class="btn-primary">← Back to Menu</button>
+    </div>
+
+    <!--------GAME OVER SCREEN------>
+    <div id="gameOverScreen" class="overlay hidden">
+      <div class="bonus-card">
+        <h2>Game Over</h2>
+        <p class="subtitle">Good Job, <span id="overName">Player</span>!</p>
+
+        <p class="stat-line">Final Score: <strong id="finalScore">0</strong></p>
+        <p class="stat-line">
+          High Score: <strong id="overHighScore">0</strong>
+        </p>
+        <p class="stat-line">Your Rank: <strong id="finalRank">#</strong></p>
+
+        <button id="btnPlayAgain" class="btn-primary">Play Again</button>
+        <button id="btnViewLeaderboardFromGame" class="btn-outline">
+          View Leaderboard
+        </button>
+        <button id="btnBackToMenuFromGame" class="btn-outline-white">
+          Back to Menu
+        </button>
+      </div>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
