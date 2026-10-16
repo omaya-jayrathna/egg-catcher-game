@@ -1,0 +1,647 @@
+/*===============EGG CATCHER WITH BANANA BONUS==============*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+    color:#1E3A5F;
+}
+
+/*===============SCREEN SYSTEM==============*/
+
+.screen{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,#87CEEB 0%,#1E3A5F 100%);
+    padding: 20px;
+    text-align:center;
+}
+
+.screen.active{
+    display:flex;
+}
+
+/* Green ground strip at bottom of every screen */
+
+.screen::after{
+    content:'';
+    position:absolute;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:15%;
+    background:linear-gradient(180deg,#66BB6A 0%, #2E7D32 100%);
+    z-index:0;
+}
+
+.screen > *{
+    position:relative;
+    z-index:1;
+}
+
+/*============CLOUDS==============*/
+.cloud{
+    position:absolute;
+    top: 40px;
+    width: 240px;
+    height: 150px;
+    background-image: url('assets/cloud.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index:0;
+}
+
+.cloud-left{
+    left:30px;
+}
+
+.cloud-right{
+    right:30px;
+}
+
+/*==============HEN DECORATION BASKET==========*/
+.screen .hen{
+    position:absolute;
+    bottom: 60px;
+    left: 40px;
+    width: 300px;
+    height: 300px;
+    background-image: url('assets/hen.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position:bottom;
+    z-index:1;
+}
+
+.screen .basket-decoration{
+    position: absolute;
+    bottom: 40px;
+    left: 270px;
+    width:240px;
+    height: 200px;
+    background-image: url('assets/eggs.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position:bottom;
+    z-index:1;
+}
+
+/*==============GAME TITLE==============*/
+.game-title{
+    font-family:'Fredoka One','Poppins',sans-serif;
+    font-size:64px;
+    font-weight:700;
+    color:#E53935;
+    text-shadow:
+        -3px -3px 0 #FFFFFF,
+        3px -3px 0 #FFFFFF,
+        -3px 3px 0 #FFFFFF,
+        3px 3px 0 #FFFFFF,
+        4px 4px 8px rgba(0,0,0,0.4);
+    letter-spacing: 1px;
+    margin-bottom:20px;
+    z-index:2;
+}
+
+.welcome-text {
+    font-size:24px;
+    font-weight:400;
+    color:#FFFFFF;
+    margin-bottom: 25px;
+    text-shadow:1px 1px 3px rgba(0,0,0,0.4);
+}
+
+/*==============CARDS==============*/
+.card{
+    background:#FFFFFF;
+    border-radius:20px;
+    padding:40px 50px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.3);
+    max-width:500px;
+    width:90%;
+    z-index:2;
+}
+
+.card h2{
+    font-family:'Poppins', sans-serif;
+    font-size:32px;
+    font-weight:700;
+    color:#1E3A5F;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    font-size: 16px;
+    color:#666666;
+    margin-bottom:25px;
+}
+
+/*==============INPUTS==========*/
+input[type="text"],
+input[type="password"]{
+    width:100%;
+    padding:14px 18px;
+    margin-bottom:15px;
+    border:2px solid #DDDDDD;
+    border-radius:10px;
+    font-family: 'Poppins', sans-serif;
+    font-size:16px;
+    color:#1E3A5F;
+    transition:border-color 0.2s;
+    background:#FFFFFF;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder{
+    color:#999999;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus{
+    outline:none;
+    border-color:#F4B400;
+}
+
+/*==============BUTTONS==============*/
+button{
+    font-family: 'Poppins', sans-serif;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    border:none;
+    border-radius: 10px;
+    padding: 14px 30px;
+    transition: transform 0.15s, box-shadow 0.2s;
+    display:inline-block;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+button:active{
+    transform:translateY(0);
+}
+
+/*Primary button- orange gradient*/
+.btn-primary{
+    background:linear-gradient(135deg, #F4B400,#FF8C00);
+    color:#FFFFFF;
+    box-shadow:0 4px 12px rgba(244,180,0,0.4);
+    width:100%;
+    padding:16px 30px;
+    font-size:20px;
+    margin-bottom:15px;
+}
+
+.btn-primary:hover{
+    box-shadow:0 6px 20px rgba(244,180,0,0.6);
+}
+
+/*Large Button (Start Game)*/
+.btn-large{
+    font-size:22px;
+    padding:18px 30px;
+    max-width: 400px;
+    width:100%;
+}
+
+/*Success button-green*/
+.btn-success{
+    background:linear-gradient(135deg,#4CAF50,#2E7D32);
+    color:#FFFFFF;
+    box-shadow:0 4px 12px rgba(76, 175,80,0.4);
+    width:100%;
+    padding:16px 30px;
+    font-size:20px;
+    margin-bottom: 15px;
+}
+
+.btn-success:hover{
+    box-shadow:0 6px 20px rgba(76,175,80,0.6);
+}
+
+/*OutLine button - orange border*/
+.btn-outline{
+    background:transparent;
+    color:#F4B400;
+    border:2px solid #F4B400;
+    padding:14px 30px;
+    font-size:18px;
+    width:100%;
+    max-width:400px;
+    margin-bottom:15px;
+}
+
+.btn-outline:hover{
+    background: rgba(244,180,0,0.1);
+}
+
+/*OutLine button - white border*/
+.btn-outline-white{
+    background:transparent;
+    color:#FFFFFF;
+    border:2px solid #FFFFFF;
+    padding:14px 30px;
+    font-size:18px;
+    width:100%;
+    margin-bottom: 15px;
+}
+
+.btn-outline-white:hover{
+    background:rgba(255,255,255,0.15);
+}
+
+/*==========LINKTEXT===========*/
+.link-text{
+    font-size:14px;
+    color:#666666;
+    margin-top:15px;
+    text-align: center;
+    width:100%;
+}
+
+.link-text .link{
+    color:#FFD700;
+    text-decoration: underline;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.link-text .link:hover{
+    color:#FFEB3B;
+}
+
+/*=========DASHBOARD -HIGH SCORE CARD=========*/
+.high-score-card{
+    background:#FFFFFF;
+    padding:18px 40px;
+    border-radius:15px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.25);
+    font-size:22px;
+    font-weight:700;
+    color:#1E3A5F;
+    margin-bottom:30px;
+    display:inline-block;
+}
+
+/*============DIFFICULTY BUTTONS===========*/
+.difficulty-label{
+    font-size:18px;
+    font-weight:600;
+    color:#FFFFFF;
+    margin-bottom:15px;
+    text-shadow:1px 1px 3px rgba(0,0,0,0.4);
+}
+
+.difficulty-row{
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    margin-bottom: 30px;
+}
+
+.diff-btn{
+    min-width:120px;
+    padding:14px 24px;
+    font-size:16px;
+    font-weight:700;
+    color:#FFFFFF;
+    border-radius:10px;
+    border:3px solid transparent;
+    transition:all 0.2s;
+}
+
+.diff-easy{
+    background:#4CAF50;
+}
+
+.diff-medium{
+    background:#FFC107;
+    color:#1E3A5F;
+}
+
+.diff-hard{
+    background: #F44336;
+}
+
+.diff-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.3);
+}
+
+.diff-btn.active{
+    border-color:#FFFFFF;
+    box-shadow:0 0 0 3px rgba(255,255,255,0.3),0 6px 16px rgba(0,0,0,0.4);
+}
+
+/*============GAME SCREEN==============*/
+#gameScreen{
+    background:linear-gradient(180deg,#87CEEB 0%,#1E3A5F 100%);
+    padding:0;
+}
+
+#gameScreen::after{
+    display:none;
+}
+
+#gameHud{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    padding:20px 40px;
+    z-index:10;
+    background:transparent;
+}
+
+.hud-item{
+    font-size:20px;
+    font-weight:700;
+    color:#FFFFFF;
+    text-shadow:1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.hud-player{
+    position:absolute;
+    top:55px;
+    left:40px;
+    font-size: 14px;
+    color:#FFFFFF;
+    opacity: 0.9;
+    z-index:10;
+}
+
+#gameCanvas{
+    display:block;
+    width:100%;
+    height: 100%;
+    background: transparent;
+}
+
+/*Game basket at bottom-center*/
+.game-basket{
+    position: absolute;
+    bottom: 40px;
+    left:50%;
+    transform: translateX(-50%);
+    width:120px;
+    height: 90px;
+    background-image: url('assets/basket.png');
+    background-size:contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index:5;
+}
+
+/*Exit button (orange circle with X)*/
+#btnExit{
+    position: absolute;
+    top:30px;
+    right:40px;
+    width:55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#F4B400,#FF8C00);
+    color:#FFFFFF;
+    font-size:24px;
+    font-weight:700;
+    padding:0;
+    display: flex;
+    align-items:center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(244,180,0,0.5);
+    z-index:20;
+    border: none;
+}
+
+#btnExit:hover{
+    box-shadow:0 6px 20px rgba(244,180,0,0.7);
+}
+
+/*============OVERLAYS (BONUS/GAME OVER)=============*/
+.overlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.75);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding: 20px;
+}
+
+.overlay.hidden{
+    display:none;
+}
+
+/*Bonus and Game Over shared card*/
+.bonus-card{
+    background:#FFFFFF;
+    border-radius:20px;
+    padding:40px 50px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    max-width:600px;
+    width:90%;
+    text-align:center;
+}
+
+.bonus-card h2{
+    font-family:'Fredoka One','Poppins',sans-serif;
+    font-size:32px;
+    color:#1E3A5F;
+    margin-bottom:10px;
+}
+
+/*=======BONUS -PUZZLE =========*/
+#puzzleContainer{
+    display:flex;
+    justify-content: center;
+    margin:25px 0;
+}
+
+#puzzleImage{
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    background: #F0F0F0;
+}
+
+#answerButtons{
+    display: flex;
+    gap:15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+#answerButtons button{
+    width:65px;
+    height: 65px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#F4B400,#FF8C00);
+    color:#FFFFFF;
+    font-size: 24px;
+    font-weight: 700;
+    padding: 0;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(244,180, 0,0.5);
+    border:none;
+}
+
+#answerButtons button:hover{
+    box-shadow:0 6px 20px rgba(244,180,0,0.7);
+    transform: scale(1.05);
+}
+
+/*=========GAME OVER -STATS===========*/
+.stat-line{
+    font-size: 20px;
+    color:#1E3A5F;
+    margin:10px 0;
+    font-weight:600;
+}
+
+.stat-line strong{
+    font-weight:700;
+}
+
+/*==========LEADERBOARD==========*/
+.leaderboard-card{
+    padding:30px 25px;
+    max-width: 800px;
+    width:90%;
+}
+
+.leaderboard-headers{
+    display:grid;
+    grid-template-columns: 80px 1fr 100px;
+    font-weight:700;
+    color:#999999;
+    font-size: 14px;
+    padding:0 15px 15px 15px;
+    border-bottom: 1px solid #EEEEEE;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+#leaderboardRows{
+    display: flex;
+    flex-direction: column;
+    gap:8px;
+}
+
+.lb-row{
+    display:grid;
+    grid-template-columns: 80px 1fr 100px;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color:#1E3A5F;
+    transition: transform 0.15s;
+}
+
+.lb-row:hover{
+    transform: scale(1.01);
+}
+
+/*Row colors*/
+.lb-row.gold{
+    background: #FFD700;
+}
+
+.lb-row.silver{
+    background: #C0C0C0;
+}
+.lb-row.bronze{
+    background: #CD7F32;
+    color:#FFFFFF;
+}
+
+.lb-row.blue{
+    background: #E3F2FD;
+}
+
+.lb-row.you{
+    background: #FFF59D;
+    color:#E65100;
+}
+
+.lb-rank{
+    font-weight:700;
+}
+
+.lb-name{
+    text-align:left;
+}
+
+.lb-score{
+    text-align:right;
+    font-weight: 700;
+}
+
+/*=============ANIMATIONS=========*/
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform: scale(0.95);
+    }
+    to{
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.overlay .bonus-card{
+    animation: fadeIn 0.25s ease-out;
+}
+
+/*=======RESPONSIVE=====*/
+@media (max-width:768px){
+    .game-title{
+        font-size:42px;
+    }
+    .screen .hen{
+        width:200px;
+        height: 200px;
+    }
+    .screen .basket-decoration{
+        width:160px;
+        height: 130px;
+        left:200px;
+    }
+    .cloud{
+        width:120px;
+        height: 70px;
+    }
+    .card{
+        padding:30px 25px;
+    }
+    .difficulty-row{
+        flex-wrap: wrap;
+    }
+}
