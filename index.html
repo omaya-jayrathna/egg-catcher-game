@@ -93,12 +93,21 @@
     <div id="gameScreen" class="screen">
       <div id="gameHud">
         <div class="hud-item">⭐ Score: <span id="score">0</span></div>
-        <div class="hud-item">❤️ Lives: <span id="lives">3</span></div>
+        <div class="hud-item" id="livesContainer">
+          Lives:<span id="livesNumber">3</span>
+          <span class="life-heart">❤️</span>
+          <span class="life-heart">❤️</span>
+          <span class="life-heart">❤️</span>
+        </div>
+
         <div class="hud-item">🏆 High: <span id="highScore">0</span></div>
       </div>
       <div class="hud-player">Player: <span id="playerName">Player</span></div>
 
       <canvas id="gameCanvas"></canvas>
+
+      <!-----EXIT BUTTON------>
+      <button id="btnExit">✕</button>
 
       <div id="bonusTrigger" class="bonus-trigger"></div>
     </div>

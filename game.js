@@ -167,6 +167,7 @@ const ctx=canvas.getContext('2d');
 let gameLoopId=null; //to store the animation frame ID
 let score=0;
 let lives=3;
+let isGameOver=false;
 let eggSpeed=2;
 let spawnRate=60; //Frames between eggs
 let frameCount=0;
@@ -220,10 +221,10 @@ document.getElementById('btnStartGame').addEventListener('click',()=>{
 
     //Set difficulty starts
     if(currentPlayer.difficulty==='easy'){
-        eggSpeed=1.5;
-        spawnRate=80;
+        eggSpeed=1.0;
+        spawnRate=120;
     }else if(currentPlayer.difficulty==='hard'){
-        eggSpeed=4;
+        eggSpeed=4.0;
         spawnRate=40;
     }else{
         eggSpeed=2.5;
@@ -237,11 +238,18 @@ function startGameLoop(){
     //Reset game state
     score=0;
     lives=3;//All difficulties have 3 lives
+    isGameOver=false;
     eggs=[];
     frameCount=0;
 
     document.getElementById('score').textContent=score;
-    document.getElementById('lives').textContent=lives;
+    document.getElementById('livesNumber').textContent=3;
+    const hearts=document.querySelectorAll('.life-heart');
+    hearts.forEach(heart=>{
+        heart.classList.remove('lost');
+        //Reset the heart to a full red heart when restarting
+        heart.textContent='❤️';
+    });
 
     resizeCanvas();//Make sure canvas is sized right
     if(gameLoopId) cancelAnimationFrame(gameLoopId);//stop old loop
@@ -306,10 +314,21 @@ function update(){
         //Missed (hits the ground)
         if(egg.y -egg.radius>canvas.height){
             eggs.splice(i,1);
-            lives--;
-            document.getElementById('lives').textContent=lives;
 
+            //If the game is already over,stop here so lives don't go negative
+            if(isGameOver)return;
+
+            lives--;
+            document.getElementById('livesNumber').textContent=lives;
+
+            const hearts=document.querySelectorAll('.life-heart');
+            //the index logic:2,1,0
+            if(hearts[lives]){
+                hearts[lives].classList.add('lost');
+               // hearts[lives].textContent='🖤';
+            }
             if(lives<=0){
+                isGameOver=true;
                 endGame();
                 return;
             }
@@ -381,6 +400,24 @@ document.getElementById('btnBackToMenuFromGame').addEventListener('click',()=>{
 document.getElementById('btnViewLeaderboardFromGame').addEventListener('click',()=>{
     document.getElementById('gameOverScreen').classList.add('hidden');
     showScreen('leaderboardScreen');
+});
+
+//=======EXIT BUTTON LOGIC=========
+document.getElementById('btnExit').addEventListener('click',()=>{
+    //1.Pause the game loop
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
+
+    //2.Ask for confirmation
+    const confirmExit=confirm("Are you sure you want to exit?Your current progress will be lost.");
+
+    if(confirmExit){
+        //3.clear eggs and go back to dashboard
+        eggs=[];
+        showScreen('dashboardScreen');
+    }else{
+        //4.If they click "Cancel",resume the game
+        gameLoop();
+    }
 });
 
 //========INITIAL LOAD=======

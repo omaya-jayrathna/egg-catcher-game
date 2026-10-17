@@ -367,7 +367,7 @@ button:active{
     width:100%;
     display:flex;
     justify-content:space-between;
-    padding:20px 40px;
+    padding:20px 120px 20px 40px;
     z-index:10;
     background:transparent;
 }
@@ -414,7 +414,7 @@ button:active{
 /*Exit button (orange circle with X)*/
 #btnExit{
     position: absolute;
-    top:30px;
+    top:80px;
     right:40px;
     width:55px;
     height: 55px;
@@ -644,4 +644,12 @@ button:active{
     .difficulty-row{
         flex-wrap: wrap;
     }
+}
+.life-heart{
+    font-size: 24px;
+    margin-right: 5px;
+    transition: opacity 0.3s ease;
+}
+.life-heart.lost{
+    display:none;
 }
