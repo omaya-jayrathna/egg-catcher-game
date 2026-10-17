@@ -645,3 +645,11 @@ button:active{
         flex-wrap: wrap;
     }
 }
+.life-heart{
+    font-size: 24px;
+    margin-right: 5px;
+    transition: opacity 0.3s ease;
+}
+.life-heart.lost{
+    opacity: 0.2;/*fades out when lost*/
+}
