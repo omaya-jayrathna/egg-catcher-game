@@ -3,6 +3,32 @@ EGG CATCHER WITH BANANA BONUS
 Screen Navigation+Login/Register
 ================================*/
 
+// ============ CUSTOM POPUP LOGIC ============
+function showPopup(title, message, isError = false) {
+    const popup = document.getElementById('customPopup');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupMessage = document.getElementById('popupMessage');
+    const popupBtn = document.getElementById('popupBtn');
+
+    popupTitle.textContent = title;
+    popupMessage.textContent = message;
+    
+    if (isError) {
+        popupTitle.style.color = '#C0392B'; // Red for errors
+    } else {
+        popupTitle.style.color = '#1E3A5F'; // Blue for success
+    }
+
+    popup.classList.remove('hidden');
+    
+    // When OK is clicked, hide the popup
+    popupBtn.onclick = () => {
+        popup.classList.add('hidden');
+    };
+}
+
+
+
 //========SCREEN MANAGEMENT============
 function showScreen(screenId){
     document.querySelectorAll('.screen').forEach(screen=>{
@@ -30,19 +56,19 @@ document.getElementById('btnLogin').addEventListener('click',()=>{
     const password=document.getElementById('loginPassword').value.trim();
 
     if(!username || !password){
-        alert('Please enter both username and password.');
+        showPopup('Please enter both username and password.');
         return;
     }
 
     const storedUser=localStorage.getItem('user_'+username);
     if(!storedUser){
-        alert('User not found. Please register first.');
+        showPopup('User not found. Please register first.');
         return;
     }
 
     const user=JSON.parse(storedUser);
     if(user.password!==password){
-        alert('Incorrect password.');
+        showPopup('Incorrect password.');
         return;
     }
 
@@ -68,22 +94,22 @@ document.getElementById('btnRegister').addEventListener('click',()=>{
     const confirm=document.getElementById('regConfirm').value.trim();
 
     if(!name || !username || !password || !confirm){
-        alert('Please fill in all fields.');
+        showPopup('Please fill in all fields.');
         return;
     }
 
     if(password!==confirm){
-        alert('Password do not match.');
+        showPopup('Password do not match.');
         return;
     }
 
     if(password.length<4){
-        alert('Password must be at least 4 characters.');
+        showPopup('Password must be at least 4 characters.');
         return;
     }
 
     if(localStorage.getItem('user_'+username)){
-        alert('Username already taken. Please choose another.');
+        showPopup('Username already taken. Please choose another.');
         return;
     }
 
@@ -100,7 +126,7 @@ document.getElementById('btnRegister').addEventListener('click',()=>{
     document.getElementById('welcomeName').textContent=name;
     document.getElementById('dashHighScore').textContent=0;
 
-    alert('Registration successful! Welcome,'+name+'!');
+    showPopup('Registration successful! Welcome,'+name+'!');
     showScreen('dashboardScreen');
 });
 
@@ -416,7 +442,7 @@ async function triggerBonusRound(){
 
     } catch(error){
         console.error("API Error:", error);
-        alert("Failed to load the real Banana API. The game will resume.");
+        showPopup("Failed to load the real Banana API. The game will resume.");
         bonusScreen.classList.add('hidden');
         isGameOver = false;
         gameLoop(); 
@@ -439,9 +465,9 @@ function handleCorrectAnswer() {
         if (hearts[lives - 1]) {
             hearts[lives - 1].classList.remove('lost');
         }
-        alert("🍌 Correct! +5 Bonus Points AND +1 Life Restored!");
+        showPopup("🍌 Correct! +5 Bonus Points AND +1 Life Restored!");
     } else {
-        alert("🍌 Correct! +5 Bonus Points!");
+        showPopup("🍌 Correct! +5 Bonus Points!");
     }
 
     eggs = []; 
@@ -467,7 +493,7 @@ function handleWrongAnswer() {
         hearts[lives].classList.add('lost');
     }
     
-    alert("❌ Wrong answer! -1 Life and -5 Points.");
+    showPopup("❌ Wrong answer! -1 Life and -5 Points.");
 
     if (lives <= 0) {
         isGameOver = true;
