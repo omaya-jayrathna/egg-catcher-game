@@ -4,21 +4,13 @@ Screen Navigation+Login/Register
 ================================*/
 
 //========SCREEN MANAGEMENT============
-
-/**show a specific screen by its ID. */
-
 function showScreen(screenId){
-    //Hide all screens
     document.querySelectorAll('.screen').forEach(screen=>{
         screen.classList.remove('active');
     });
-
-    //Hide all overlays (bonus, game over)
     document.querySelectorAll('.overlay').forEach(overlay=>{
         overlay.classList.add('hidden');
     });
-
-    //show the requested screen
     const targetScreen =document.getElementById(screenId);
     if(targetScreen){
         targetScreen.classList.add('active');
@@ -54,7 +46,6 @@ document.getElementById('btnLogin').addEventListener('click',()=>{
         return;
     }
 
-    //Login Successful
     currentPlayer.name=user.name ||username;
     currentPlayer.highScore=user.highScore||0;
 
@@ -62,7 +53,6 @@ document.getElementById('btnLogin').addEventListener('click',()=>{
     document.getElementById('dashHighScore').textContent=currentPlayer.highScore;
 
     showScreen('dashboardScreen');
-
 });
 
 //Link to Register Screen
@@ -99,7 +89,7 @@ document.getElementById('btnRegister').addEventListener('click',()=>{
 
     const newUser={
         name:name,
-        password:password, //will be hashed in later
+        password:password,
         highScore:0
     };
     localStorage.setItem('user_'+username,JSON.stringify(newUser));
@@ -111,15 +101,13 @@ document.getElementById('btnRegister').addEventListener('click',()=>{
     document.getElementById('dashHighScore').textContent=0;
 
     alert('Registration successful! Welcome,'+name+'!');
-
     showScreen('dashboardScreen');
 });
 
+document.getElementById('linkToLogin').addEventListener('click',()=>showScreen('loginScreen'));
+
 //===========DASHBOARD SCREEN============
-
-//DIFFICULTY SELECTION
 const difficultyButtons=document.querySelectorAll('.diff-btn');
-
 difficultyButtons.forEach(button=>{
     button.addEventListener('click',()=>{
         difficultyButtons.forEach(btn=>btn.classList.remove('active'));
@@ -128,24 +116,14 @@ difficultyButtons.forEach(button=>{
     });
 });
 
-//START GAME (goes to game screen)
-document.getElementById('btnStartGame').addEventListener('click',()=>{
-    document.getElementById('playerName').textContent=currentPlayer.name;
-    document.getElementById('highScore').textContent=currentPlayer.highScore;
-    showScreen('gameScreen');
-});
-
-//VIEW LEADERBOARD
 document.getElementById('btnViewLeaderboard').addEventListener('click',()=>{
     showScreen('leaderboardScreen');
 });
 
-//LOGOUT
 document.getElementById('linkLogout').addEventListener('click',()=>{
     showScreen('loginScreen');
 });
 
-//==========LEADERBOARD SCREEN============
 document.getElementById('btnBackToMenu').addEventListener('click',()=>{
     showScreen('dashboardScreen');
 });
@@ -154,42 +132,27 @@ document.getElementById('btnBackToMenu').addEventListener('click',()=>{
 showScreen('loginScreen');
 
 
-
 /*============================================
 SESSION 2:THE GAME LOOP
-Bucket movement, falling eggs,collision,score
 ===============================================*/
-
-//=========GAME VARIABLES===========
 const canvas=document.getElementById('gameCanvas');
 const ctx=canvas.getContext('2d');
 
-let gameLoopId=null; //to store the animation frame ID
+let gameLoopId=null;
 let score=0;
 let lives=3;
 let isGameOver=false;
 let eggSpeed=2;
-let spawnRate=60; //Frames between eggs
+let spawnRate=60;
 let frameCount=0;
 let eggs=[];
 let keys={ArrowLeft:false,ArrowRight:false};
 
-//Bucket object
-const bucket={
-    width:120,
-    height:90,
-    x:0,
-    y:0,
-    speed:8
-};
+const bucket={ width:120, height:90, x:0, y:0, speed:8 };
 
-//==========CANVAS SETUP=============
 function resizeCanvas(){
-    //Make canvas fill the screen
     canvas.width=window.innerWidth;
     canvas.height=window.innerHeight;
-
-    //Position bucket at bottom center
     bucket.y=canvas.height-bucket.height-40;
     if(bucket.x===0){
         bucket.x=(canvas.width/2)-(bucket.width/2);
@@ -197,7 +160,6 @@ function resizeCanvas(){
 }
 window.addEventListener('resize',resizeCanvas);
 
-//=============INPUT HANDLING===========
 document.addEventListener('keydown',(e)=>{
     if(e.key==='ArrowLeft')keys.ArrowLeft=true;
     if(e.key==='ArrowRight')keys.ArrowRight=true;
@@ -209,7 +171,6 @@ document.addEventListener('keyup',(e)=>{
 });
 
 //=========START GAME=============
-//Override the previous Start Game Listner to actually start thr gameLoop
 document.getElementById('btnStartGame').replaceWith(
     document.getElementById('btnStartGame').cloneNode(true)
 );
@@ -219,55 +180,47 @@ document.getElementById('btnStartGame').addEventListener('click',()=>{
     document.getElementById('highScore').textContent=currentPlayer.highScore;
     showScreen('gameScreen');
 
-    //Set difficulty starts
-    if(currentPlayer.difficulty==='easy'){
-        eggSpeed=1.0;
-        spawnRate=120;
-    }else if(currentPlayer.difficulty==='hard'){
-        eggSpeed=4.0;
-        spawnRate=40;
-    }else{
-        eggSpeed=2.5;
-        spawnRate=60;
-    }
+    if(currentPlayer.difficulty==='easy'){ eggSpeed=1.0; spawnRate=120; }
+    else if(currentPlayer.difficulty==='hard'){ eggSpeed=4.0; spawnRate=40; }
+    else{ eggSpeed=2.5; spawnRate=60; }
+
     startGameLoop();
 });
 
 //=======GAME LOOP===========
 function startGameLoop(){
-    //Reset game state
     score=0;
-    lives=3;//All difficulties have 3 lives
+    lives=3;
     isGameOver=false;
     eggs=[];
     frameCount=0;
 
     document.getElementById('score').textContent=score;
     document.getElementById('livesNumber').textContent=3;
+    
+    // UPDATE HIGH SCORE ON SCREEN
+    document.getElementById('highScore').textContent=currentPlayer.highScore;
+
     const hearts=document.querySelectorAll('.life-heart');
     hearts.forEach(heart=>{
         heart.classList.remove('lost');
-        //Reset the heart to a full red heart when restarting
         heart.textContent='❤️';
     });
 
-    resizeCanvas();//Make sure canvas is sized right
-    if(gameLoopId) cancelAnimationFrame(gameLoopId);//stop old loop
-    gameLoop();//Start new loop
+    resizeCanvas();
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
+    gameLoop();
 }
+
 function gameLoop(){
-    //1- Update
+    if(isGameOver) return;
+
     update();
-
-    //2-Draw
     draw();
-
-    //3-Request next frame
     gameLoopId=requestAnimationFrame(gameLoop);
 }
 
 function update(){
-    //Move bucket
     if(keys.ArrowLeft && bucket.x>0){
         bucket.x -=bucket.speed;
     }
@@ -275,7 +228,6 @@ function update(){
         bucket.x+=bucket.speed;
     }
 
-    //Spawn eggs
     frameCount++;
     if(frameCount>=spawnRate){
         eggs.push({
@@ -287,45 +239,32 @@ function update(){
         frameCount=0;
     }
 
-    //Update eggs
     for(let i=eggs.length -1;i>=0;i--){
         let egg=eggs[i];
         egg.y+=egg.speed;
 
-        //Collision with bucket -check if egg is inside bucket area
-        if(
-            egg.y +egg.radius>=bucket.y &&
-            egg.y -egg.radius<=bucket.y +bucket.height &&
-            egg.x >=bucket.x &&
-            egg.x <=bucket.x +bucket.width
-        ) {
-            //Caught it!
+        if(egg.y +egg.radius>=bucket.y && egg.y -egg.radius<=bucket.y +bucket.height && egg.x >=bucket.x && egg.x <=bucket.x +bucket.width) {
             eggs.splice(i,1);
             score++;
             document.getElementById('score').textContent=score;
 
-            //Trigger bonus round every 10 points
-            if(score>0 && score %10 ===0){
-                //We will add the API call
-                console.log("Bonus round triggered (not implemented yet)");
+            if(score>0 && score %5 ===0){
+                isGameOver=true;
+                triggerBonusRound();
+                return;
             }
             continue;
         }
-        //Missed (hits the ground)
+        
         if(egg.y -egg.radius>canvas.height){
             eggs.splice(i,1);
-
-            //If the game is already over,stop here so lives don't go negative
             if(isGameOver)return;
 
             lives--;
             document.getElementById('livesNumber').textContent=lives;
-
             const hearts=document.querySelectorAll('.life-heart');
-            //the index logic:2,1,0
             if(hearts[lives]){
                 hearts[lives].classList.add('lost');
-               // hearts[lives].textContent='🖤';
             }
             if(lives<=0){
                 isGameOver=true;
@@ -335,29 +274,26 @@ function update(){
         }
     }
 }
+
 function draw(){
-    //clear canvas
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    //Draw eggs
     eggs.forEach(egg=>{
         ctx.beginPath();
         ctx.ellipse(egg.x,egg.y,egg.radius*0.8,egg.radius,0,0,Math.PI*2);
-        ctx.fillStyle='#FFF8DC';//Cream
+        ctx.fillStyle='#FFF8DC';
         ctx.fill();
         ctx.strokeStyle='#E0D5B0';
         ctx.lineWidth=2;
         ctx.stroke();
     });
 
-    //Draw bucket
-    ctx.fillStyle='#C0392B';//redmixed brown
+    ctx.fillStyle='#C0392B';
     ctx.beginPath();
     ctx.roundRect(bucket.x,bucket.y,bucket.width,bucket.height,[0,0,20,20]);
     ctx.fill();
 
-    //Draw Bucket Rim
-    ctx.fillStyle='#F39C12';//Orange
+    ctx.fillStyle='#F39C12';
     ctx.fillRect(bucket.x -5,bucket.y,bucket.width+10,15);
 }
 
@@ -365,11 +301,8 @@ function draw(){
 function endGame(){
     cancelAnimationFrame(gameLoopId);
 
-    //Update high score 
     if(score>currentPlayer.highScore){
         currentPlayer.highScore=score;
-
-        //Save to LocalStorage
         const storedUser=localStorage.getItem('user_'+currentPlayer.name);
         if(storedUser){
             const user=JSON.parse(storedUser);
@@ -377,12 +310,10 @@ function endGame(){
             localStorage.setItem('user_'+currentPlayer.name,JSON.stringify(user));
         }
     }
-    //Fill Game Over Screen
     document.getElementById('finalScore').textContent=score;
     document.getElementById('overHighScore').textContent=currentPlayer.highScore;
     document.getElementById('overName').textContent=currentPlayer.name;
 
-    //Show overlay
     document.getElementById('gameOverScreen').classList.remove('hidden');
 }
 
@@ -404,24 +335,160 @@ document.getElementById('btnViewLeaderboardFromGame').addEventListener('click',(
 
 //=======EXIT BUTTON LOGIC=========
 document.getElementById('btnExit').addEventListener('click',()=>{
-    //1.Pause the game loop
     if(gameLoopId) cancelAnimationFrame(gameLoopId);
 
-    //2.Ask for confirmation
     const confirmExit=confirm("Are you sure you want to exit?Your current progress will be lost.");
 
     if(confirmExit){
-        //3.clear eggs and go back to dashboard
         eggs=[];
         showScreen('dashboardScreen');
     }else{
-        //4.If they click "Cancel",resume the game
         gameLoop();
     }
 });
 
-//========INITIAL LOAD=======
-showScreen('loginScreen');
+//============BANANA API (INTEROPERABILITY)============
+async function triggerBonusRound(){
+    if(gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+        gameLoopId = null; 
+    }
 
+    const bonusScreen = document.getElementById('bonusScreen');
+    const puzzleImage = document.getElementById('puzzleImage');
+    const answerButtons = document.getElementById('answerButtons');
 
+    bonusScreen.classList.remove('hidden');
+    answerButtons.innerHTML = 'Loading...'; 
+    puzzleImage.src = '';
 
+    try{
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000); 
+
+        // Fetch the REAL API directly
+        const response = await fetch('https://marcconrad.com/uob/banana/api.php?out=json&base64=yes', { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        const data = await response.json();
+        
+        // 1. Load the image
+        puzzleImage.src = 'data:image/png;base64,' + data.question;
+        
+        // 2. Clear loading text
+        answerButtons.innerHTML = '';
+        
+        // 3. Get the correct answers from the API
+        let correctAnswers = data.solution;
+        if (typeof correctAnswers === 'string') {
+            correctAnswers = correctAnswers.split(',').map(s => s.trim());
+        } else if (!Array.isArray(correctAnswers)) {
+            correctAnswers = [correctAnswers]; 
+        }
+        
+        // Ensure we have a correct answer as a string to check against
+        const primaryCorrectAnswer = String(correctAnswers[0]);
+
+        // 4. Generate 4 unique options (1 correct, 3 wrong)
+        let options = [primaryCorrectAnswer];
+        
+        // Add random wrong answers around the correct one
+        while(options.length < 4) {
+            // Generate a random number close to the correct answer
+            let wrongAnswer = String(Math.max(0, parseInt(primaryCorrectAnswer) + Math.floor(Math.random() * 7) - 3));
+            
+            // Only add if it's not already in the options (keeps them unique)
+            if (!options.includes(wrongAnswer)) {
+                options.push(wrongAnswer);
+            }
+        }
+
+        // 5. Shuffle the options so the correct one isn't always first
+        options.sort(() => Math.random() - 0.5);
+
+        // 6. Create the buttons with the actual numbers
+        options.forEach(num => {
+            const btn = document.createElement('button');
+            btn.textContent = num;
+            btn.onclick = () => checkBonusAnswer(num, correctAnswers);
+            answerButtons.appendChild(btn);
+        });
+
+    } catch(error){
+        console.error("API Error:", error);
+        alert("Failed to load the real Banana API. The game will resume.");
+        bonusScreen.classList.add('hidden');
+        isGameOver = false;
+        gameLoop(); 
+    }
+}
+
+// Helper function for correct answers
+function handleCorrectAnswer() {
+    const bonusScreen = document.getElementById('bonusScreen');
+    bonusScreen.classList.add('hidden');
+
+    score += 5;
+    document.getElementById('score').textContent = score;
+    
+    // IF PLAYER HAS LESS THAN 3 LIVES, GIVE ONE BACK
+    if (lives < 3) {
+        lives++;
+        document.getElementById('livesNumber').textContent = lives;
+        const hearts = document.querySelectorAll('.life-heart');
+        if (hearts[lives - 1]) {
+            hearts[lives - 1].classList.remove('lost');
+        }
+        alert("🍌 Correct! +5 Bonus Points AND +1 Life Restored!");
+    } else {
+        alert("🍌 Correct! +5 Bonus Points!");
+    }
+
+    eggs = []; 
+    frameCount = 0;
+    isGameOver = false;
+    gameLoop();
+}
+
+// Helper function for wrong answers
+function handleWrongAnswer() {
+    const bonusScreen = document.getElementById('bonusScreen');
+    bonusScreen.classList.add('hidden');
+
+    lives--;
+    score -= 5; 
+    if (score < 0) score = 0; // Prevent negative score
+
+    document.getElementById('livesNumber').textContent = lives;
+    document.getElementById('score').textContent = score;
+
+    const hearts = document.querySelectorAll('.life-heart');
+    if (hearts[lives]) {
+        hearts[lives].classList.add('lost');
+    }
+    
+    alert("❌ Wrong answer! -1 Life and -5 Points.");
+
+    if (lives <= 0) {
+        isGameOver = true;
+        endGame();
+        return;
+    }
+    
+    eggs = []; 
+    frameCount = 0;
+    isGameOver = false;
+    gameLoop();
+}
+
+// This checks the answer
+function checkBonusAnswer(selected, correctAnswers){
+    // Convert both to strings to ensure they match (e.g., "2" == "2")
+    const isCorrect = correctAnswers.some(ans => String(ans) === String(selected));
+    
+    if(isCorrect){
+        handleCorrectAnswer();
+    } else {
+        handleWrongAnswer();
+    }
+}
