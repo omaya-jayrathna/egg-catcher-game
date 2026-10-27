@@ -51,34 +51,36 @@ let currentPlayer={
 };
 
 //===========LOGIN SCREEN==========
-document.getElementById('btnLogin').addEventListener('click',()=>{
+document.getElementById('btnLogin').addEventListener('click',async()=>{
     const username=document.getElementById('loginUsername').value.trim();
     const password=document.getElementById('loginPassword').value.trim();
 
     if(!username || !password){
-        showPopup('Please enter both username and password.');
+        alert('Please enter both username and password.');
         return;
     }
 
-    const storedUser=localStorage.getItem('user_'+username);
-    if(!storedUser){
-        showPopup('User not found. Please register first.');
-        return;
-    }
+   const response=await fetch('http://localhost/eggcatcher_api/login.php',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,password})
+   });
+   const data=await response.json();
 
-    const user=JSON.parse(storedUser);
-    if(user.password!==password){
-        showPopup('Incorrect password.');
-        return;
-    }
+   if(data.success){
+    //Save session ID in a Cookie(SESSION MANAGEMENT)
+    document.cookie=`sessionId=${data.sessionId}; max-age=86400; path=/`;
 
-    currentPlayer.name=user.name ||username;
-    currentPlayer.highScore=user.highScore||0;
-
+    currentPlayer.name=data.username;
+    currentPlayer.highScore=data.highScore;
+   
     document.getElementById('welcomeName').textContent=currentPlayer.name;
     document.getElementById('dashHighScore').textContent=currentPlayer.highScore;
-
     showScreen('dashboardScreen');
+
+   }else{
+    alert(data.message);
+   }
 });
 
 //Link to Register Screen
@@ -87,48 +89,44 @@ document.getElementById('linkToRegister').addEventListener('click',()=>{
 });
 
 //=======REGISTER SCREEN========
-document.getElementById('btnRegister').addEventListener('click',()=>{
+document.getElementById('btnRegister').addEventListener('click',async()=>{
     const name=document.getElementById('regName').value.trim();
     const username=document.getElementById('regUsername').value.trim();
     const password=document.getElementById('regPassword').value.trim();
     const confirm=document.getElementById('regConfirm').value.trim();
 
     if(!name || !username || !password || !confirm){
-        showPopup('Please fill in all fields.');
+        alert('Please fill in all fields.');
         return;
     }
 
     if(password!==confirm){
-        showPopup('Password do not match.');
+        alert('Password do not match.');
         return;
     }
 
     if(password.length<4){
-        showPopup('Password must be at least 4 characters.');
+        alert('Password must be at least 4 characters.');
         return;
     }
 
-    if(localStorage.getItem('user_'+username)){
-        showPopup('Username already taken. Please choose another.');
-        return;
+    const response=await fetch('http://localhost/eggcatcher_api/register.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+
+     const data = await response.json();
+
+    if (data.success) {
+        alert("Registration successful! Please login.");
+        showScreen('loginScreen');
+    } else {
+        alert(data.message);
     }
-
-    const newUser={
-        name:name,
-        password:password,
-        highScore:0
-    };
-    localStorage.setItem('user_'+username,JSON.stringify(newUser));
-
-    currentPlayer.name=name;
-    currentPlayer.highScore=0;
-
-    document.getElementById('welcomeName').textContent=name;
-    document.getElementById('dashHighScore').textContent=0;
-
-    showPopup('Registration successful! Welcome,'+name+'!');
-    showScreen('dashboardScreen');
 });
+
+
 
 document.getElementById('linkToLogin').addEventListener('click',()=>showScreen('loginScreen'));
 
@@ -142,8 +140,48 @@ difficultyButtons.forEach(button=>{
     });
 });
 
-document.getElementById('btnViewLeaderboard').addEventListener('click',()=>{
+document.getElementById('btnViewLeaderboard').addEventListener('click',async()=>{
     showScreen('leaderboardScreen');
+
+    const leaderboardRows=document.getElementById('leaderboardRows');
+    leaderboardRows.innerHTML= '<p style="color:#666; text-align:center;">Loading scores...</p>';
+
+    try{
+        const response=await fetch('http://localhost/eggcatcher_api/get_leaderboard.php');
+        const data=await response.json();
+
+        leaderboardRows.innerHTML='';//Clear loading text
+
+        if(data.length===0){
+            leaderboardRows.innerHTML= '<p style="color:#666; text-align:center;">No scores yet!</p>';
+            return;
+        }
+        //Create the rows dynamically
+        data.forEach((player,index)=>{
+            const rank=index+1;
+            let rowClass='blue';//Default color
+
+            if(rank===1)rowClass='gold';
+            else if(rank===2)rowClass='silver';
+            else if(rank===3)rowClass='bronze';
+
+            //Highlight the current player
+            if(player.username===currentPlayer.name){
+                rowClass='you';
+            }
+            const row=document.createElement('div');
+            row.className=`lb-row ${rowClass}`;
+            row.innerHTML = `
+                <span class="lb-rank">#${rank}</span>
+                <span class="lb-name">${player.username}</span>
+                <span class="lb-score">${player.high_score}</span>
+            `;
+            leaderboardRows.appendChild(row);
+        });
+    }catch(error){
+        console.error("Leaderboard Error:",error);
+         leaderboardRows.innerHTML = '<p style="color:red; text-align:center;">Failed to load scores.</p>';
+    }
 });
 
 document.getElementById('linkLogout').addEventListener('click',()=>{
@@ -327,21 +365,54 @@ function draw(){
 function endGame(){
     cancelAnimationFrame(gameLoopId);
 
-    if(score>currentPlayer.highScore){
-        currentPlayer.highScore=score;
-        const storedUser=localStorage.getItem('user_'+currentPlayer.name);
-        if(storedUser){
-            const user=JSON.parse(storedUser);
-            user.highScore=currentPlayer.highScore;
-            localStorage.setItem('user_'+currentPlayer.name,JSON.stringify(user));
-        }
+    // 1. Send score to PHP Backend
+    const sessionId = document.cookie.split('; ').find(row => row.startsWith('sessionId='))?.split('=')[1];
+    if (sessionId) {
+        fetch('http://localhost/eggcatcher_api/update_score.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sessionId, score: score })
+        }).then(() => {
+            // After saving the score, fetch the leaderboard to find the rank
+            calculateRank();
+        });
+    } else {
+        calculateRank(); // If no session, just calculate rank anyway
     }
-    document.getElementById('finalScore').textContent=score;
-    document.getElementById('overHighScore').textContent=currentPlayer.highScore;
-    document.getElementById('overName').textContent=currentPlayer.name;
 
+    // 2. Update Local State
+    if(score > currentPlayer.highScore){
+        currentPlayer.highScore = score;
+    }
+
+    // 3. Update Game Over Screen
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('overHighScore').textContent = currentPlayer.highScore;
+    document.getElementById('overName').textContent = currentPlayer.name;
+
+    // 4. Show Overlay
     document.getElementById('gameOverScreen').classList.remove('hidden');
 }
+
+// New function to calculate the rank
+async function calculateRank() {
+    try {
+        const response = await fetch('http://localhost/eggcatcher_api/get_leaderboard.php');
+        const data = await response.json();
+        
+        let rank = "#-";
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].username === currentPlayer.name) {
+                rank = `#${i + 1}`;
+                break;
+            }
+        }
+        document.getElementById('finalRank').textContent = rank;
+    } catch (error) {
+        console.error("Could not calculate rank", error);
+    }
+}
+
 
 //==========GAME OVER BUTTONS========
 document.getElementById('btnPlayAgain').addEventListener('click',()=>{
@@ -465,9 +536,9 @@ function handleCorrectAnswer() {
         if (hearts[lives - 1]) {
             hearts[lives - 1].classList.remove('lost');
         }
-        showPopup("🍌 Correct! +5 Bonus Points AND +1 Life Restored!");
+        showPopup("Correct!", "🍌 +5 Bonus Points AND +1 Life Restored!");
     } else {
-        showPopup("🍌 Correct! +5 Bonus Points!");
+        showPopup("Correct!", "🍌 +5 Bonus Points!");
     }
 
     eggs = []; 
@@ -493,7 +564,7 @@ function handleWrongAnswer() {
         hearts[lives].classList.add('lost');
     }
     
-    showPopup("❌ Wrong answer! -1 Life and -5 Points.");
+    showPopup("Wrong Answer", "❌ -1 Life and -5 Points.", true);
 
     if (lives <= 0) {
         isGameOver = true;

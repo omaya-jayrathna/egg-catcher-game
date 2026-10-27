@@ -653,3 +653,10 @@ button:active{
 .life-heart.lost{
     display:none;
 }
+
+/* Fix the Back to Menu button on the Leaderboard */
+#leaderboardScreen .btn-primary {
+    width: auto;
+    padding: 14px 40px;
+    margin-top: 20px;
+}
