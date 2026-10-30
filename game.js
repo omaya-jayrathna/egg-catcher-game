@@ -3,6 +3,13 @@ EGG CATCHER WITH BANANA BONUS
 Screen Navigation+Login/Register
 ================================*/
 
+/*BACKGROUND MUSIC 
+*Source :Mixkit*/
+
+let bgMusic=new Audio('assets/bgm.mp3');
+bgMusic.loop=true;
+bgMusic.volume=0.3;
+
 // ============ CUSTOM POPUP LOGIC ============
 function showPopup(title, message, isError = false) {
     const popup = document.getElementById('customPopup');
@@ -244,6 +251,9 @@ document.getElementById('btnStartGame').addEventListener('click',()=>{
     document.getElementById('highScore').textContent=currentPlayer.highScore;
     showScreen('gameScreen');
 
+    bgMusic.currentTime=0;
+    bgMusic.play();
+
     if(currentPlayer.difficulty==='easy'){ eggSpeed=1.0; spawnRate=120; }
     else if(currentPlayer.difficulty==='hard'){ eggSpeed=4.0; spawnRate=40; }
     else{ eggSpeed=2.5; spawnRate=60; }
@@ -308,9 +318,12 @@ function update(){
         egg.y+=egg.speed;
 
         if(egg.y +egg.radius>=bucket.y && egg.y -egg.radius<=bucket.y +bucket.height && egg.x >=bucket.x && egg.x <=bucket.x +bucket.width) {
+            //caught it
             eggs.splice(i,1);
             score++;
             document.getElementById('score').textContent=score;
+
+            playSound('catch');
 
             if(score>0 && score %5 ===0){
                 isGameOver=true;
@@ -365,6 +378,9 @@ function draw(){
 function endGame(){
     cancelAnimationFrame(gameLoopId);
 
+    playSound('gameover');
+    bgMusic.pause();
+
     // 1. Send score to PHP Backend
     const sessionId = document.cookie.split('; ').find(row => row.startsWith('sessionId='))?.split('=')[1];
     if (sessionId) {
@@ -418,6 +434,9 @@ async function calculateRank() {
 document.getElementById('btnPlayAgain').addEventListener('click',()=>{
     document.getElementById('gameOverScreen').classList.add('hidden');
     startGameLoop();
+
+    bgMusic.currentTime=0;
+    bgMusic.play();
 });
 
 document.getElementById('btnBackToMenuFromGame').addEventListener('click',()=>{
@@ -435,6 +454,10 @@ document.getElementById('btnExit').addEventListener('click',()=>{
     if(gameLoopId) cancelAnimationFrame(gameLoopId);
 
     const confirmExit=confirm("Are you sure you want to exit?Your current progress will be lost.");
+
+    if(confirmExit){
+        bgMusic.pause();
+    }
 
     if(confirmExit){
         eggs=[];
@@ -527,6 +550,8 @@ function handleCorrectAnswer() {
 
     score += 5;
     document.getElementById('score').textContent = score;
+
+    playSound('bonus');
     
     // IF PLAYER HAS LESS THAN 3 LIVES, GIVE ONE BACK
     if (lives < 3) {
@@ -564,6 +589,8 @@ function handleWrongAnswer() {
         hearts[lives].classList.add('lost');
     }
     
+    playSound('wrong');
+
     showPopup("Wrong Answer", "❌ -1 Life and -5 Points.", true);
 
     if (lives <= 0) {
@@ -587,5 +614,35 @@ function checkBonusAnswer(selected, correctAnswers){
         handleCorrectAnswer();
     } else {
         handleWrongAnswer();
+    }
+}
+
+//=============SOUND API ===============
+async function playSound(type){
+    let soundUrl='';
+
+    if(type==='catch'){
+        soundUrl='https://actions.google.com/sounds/v1/cartoon/pop.ogg'; 
+
+    }else if(type==='bonus'){
+        soundUrl='https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg';
+
+    }else if(type==='wrong'){
+        soundUrl='https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=error-126627.mp3'; 
+
+    }else if(type==='gameover'){
+        soundUrl='https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=error-126627.mp3'; 
+    }
+
+    if(!soundUrl)return;
+
+    try{
+        const response=await fetch(soundUrl);
+        const blob=await response.blob();
+        const audioUrl=URL.createObjectURL(blob);
+        const audio=new Audio(audioUrl);
+        audio.play();
+    }catch(error){
+        console.log("Sound API failed to load",error);
     }
 }
